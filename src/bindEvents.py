@@ -19,3 +19,5 @@ def Bind(self):
     self.Bind(wx.EVT_MENU, self.onAbout, self.menuAbout_Info)
 
     self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
+
+    self.Bind(wx.EVT_TIMER, self.Autosaver.OnTimer)

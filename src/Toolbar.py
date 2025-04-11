@@ -13,10 +13,6 @@ def MakeToolBar(self):
             self.Bind(wx.EVT_UPDATE_UI, updateUI, item)
     self.tbar_panel = wx.Panel(self)
     tbar = wx.ToolBar(self.tbar_panel)
-    
-    #layout = wx.BoxSizer(wx.HORIZONTAL)
-    #layout.Add(tbar_panel, proportion=1,border=0,flag=wx.ALL|wx.EXPAND)
-    #self.SetSizer(layout)
 
     doBind( tbar.AddTool(-1, '', images._rt_open.GetBitmap(),
                             shortHelp="Open"), self.OnFileOpen)

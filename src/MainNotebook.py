@@ -7,6 +7,8 @@ import wx.stc as stc # StyledTextControl
 import wx.richtext as rt
 import wx.lib.agw.aui as aui # Tab notebooks
 
+import src.FileTree as tree
+
 #------
 class TabPanel(wx.Panel):
     def __init__(self, parent):
@@ -55,12 +57,11 @@ class MainNotebook(aui.auibook.AuiNotebook):
     def __init__(self,parent):
         self.openTabs = []
         super().__init__(parent, id=wx.ID_ANY, agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_TAB_SPLIT|aui.AUI_NB_TAB_MOVE|aui.AUI_NB_SCROLL_BUTTONS|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_MIDDLE_CLICK_CLOSE)
-        
+        self.parent = parent
         #Add first tab to notebook
         #TODO: Create functions to load last opened docs
         self.CreateNewTab()
-        self.CreateNewTab()
-
+        
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnPageClose)
         
         #self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
@@ -70,23 +71,24 @@ class MainNotebook(aui.auibook.AuiNotebook):
         '''Create new blank file/tab/page'''
         newTab = TabPanel(self)
         self.AddPage(newTab, name)
+        print(self.parent.Tree)
 
         path = Path.cwd()
         path_UnOrgTexts = path/Path('UnorganizedTexts')
         file_exists = True
         i = 1
-        while file_exists:
+        while file_exists: #file_exists = os.access(self.file, os.F_OK)
             new_file = str(i)+ '.txt'
             new_file_path = path_UnOrgTexts/Path(new_file)
             if new_file_path.is_file():
                 i+=1
-            else:
-                with open(new_file_path, 'w', encoding='utf-8') as file:
+            else: 
+                """ with open(new_file_path, 'w', encoding='utf-8') as file:
                     file.write('')
                     newTab.filedir = str(path_UnOrgTexts)
                     newTab.file = str(new_file)
                     print(Path(newTab.filedir))
-                    print(Path(newTab.file))
+                    print(Path(newTab.file)) """
                 file_exists = False
         self.openTabs.append(newTab)
 

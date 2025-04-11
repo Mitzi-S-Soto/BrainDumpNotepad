@@ -1,0 +1,41 @@
+======================================
+Brain Dump Program Specification
+======================================
+
+Description
+-----------
+The goal of this program is to keep multiple small
+text files opened and saved, as well as provide a
+file tree for larger projects based on folder location.
+
+Requirements
+------------
+*write in text boxes that are auto-saved
+*keep multiple text files open via tabs
+*list open files in a file tree
+*open a folder as a project in the file tree
+*list open files that aren't part of open project folder
+    *indicate unrelated files with a symbol on their tab
+*auto-save files on program exit
+*when auto-saving new files, store in a genaric folder
+*when manually saving, ask to save in new project folder
+    or as single file
+*simple formatting such as:
+    *bold, italic, underline
+    *Font Size
+    *Font Type
+*if possible, ability to keep window above others
+
+Functionality Not Required
+--------------------------
+*split screen to see files side by side
+*'scriverings' like setting to see multiple files as one 
+*Formatting Styles
+*Table Insertion
+*Image Insertion/viewing
+*Opening more than one project Folder
+
+Limitations
+----------------
+The program must:
+    *Run on Mac
