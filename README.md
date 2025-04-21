@@ -1,8 +1,7 @@
 # BrainDumpNotepad
  
-======================================
 Brain Dump Notepad Specification
-======================================
+======
 
 Description
 -----------
