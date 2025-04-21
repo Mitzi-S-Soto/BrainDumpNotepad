@@ -1,5 +1,5 @@
 ======================================
-Brain Dump Program Specification
+Brain Dump Notepad Specification
 ======================================
 
 Description
@@ -10,17 +10,17 @@ file tree for larger projects based on folder location.
 
 Requirements
 ------------
-*write in text boxes that are auto-saved
-*keep multiple text files open via tabs
+**write in text boxes that are auto-saved
+**keep multiple text files open via tabs
 *list open files in a file tree
 *open a folder as a project in the file tree
 *list open files that aren't part of open project folder
     *indicate unrelated files with a symbol on their tab
-*auto-save files on program exit
-*when auto-saving new files, store in a genaric folder
+**auto-save files on program exit
+**when auto-saving new files, store in a genaric folder
 *when manually saving, ask to save in new project folder
     or as single file
-*simple formatting such as:
+**simple formatting such as:
     *bold, italic, underline
     *Font Size
     *Font Type
@@ -28,14 +28,26 @@ Requirements
 
 Functionality Not Required
 --------------------------
+*Font control on toolbar
 *split screen to see files side by side
 *'scriverings' like setting to see multiple files as one 
 *Formatting Styles
 *Table Insertion
 *Image Insertion/viewing
 *Opening more than one project Folder
+*Find and Replace
 
 Limitations
 ----------------
 The program must:
     *Run on Mac
+
+To Do's
+----------------
+*Work on finishing tab editor
+    before working on Tree
+*Use own images for toolbars
+*Tab functions? Right click menus
+**dont open already open file, just jump to tab
+* newTab.isSaved = True #TODO: this dont work for reopend unsorted - instead check if file is in temp first
+---doesn't seem to be checking is saved
