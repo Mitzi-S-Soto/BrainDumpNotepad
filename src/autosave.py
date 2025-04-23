@@ -14,7 +14,7 @@ def StartAutoSaveTimer(self):
     self.Timer = wx.Timer(self)
     self.Timer.Start(f.autosaveTimerLength)
     self.TimerRunning = False
-    logging.debug("Timer Start")
+    logging.info("Timer Start")
 
 def AutoSaveTimerStop(self):
     self.Timer.Stop()
@@ -25,16 +25,16 @@ def OnAutoSaveTimer(self):
         f.MAINWINDOW.TimerRunning = True
         f.MAINWINDOW.StatusBar.SetStatusText("Auto Saving...")
         delayedresult.startWorker(AutoSaveConsumer,AutoSaveProducer, wargs={self})
-        logging.debug("started working")
+        logging.info("started working")
     else:
         logging.debug("Already running")
-    logging.debug("got EVT_TIMER event\n")
+    logging.info("got EVT_TIMER event")
 
 def AutoSaveProducer(self, *wargs):
-    logging.debug('Start Saving')
+    logging.info('Start Saving')
     f.SaveAllOpenFiles()
     f.MAINWINDOW.TimerRunning = False
-    logging.debug('Saving end')
+    logging.info('Saving end')
     f.MAINWINDOW.StatusBar.SetStatusText(" ")
     return True
 
@@ -47,7 +47,7 @@ def AutoSaveHandleAbort(self):
 def AutoSaveConsumer(delayedResult):
     result = delayedResult.get()
     if result:
-        logging.debug("done {result}")
+        logging.info("done %s", result)
     else:
         logging.debug("No result")
 
