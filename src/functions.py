@@ -25,7 +25,7 @@ ALTEVENTTAB = [] #Set in Bind Events
 path = Path.cwd()
 dirname = "."
 fileType = 1
-filePath = str(Path.cwd() / Path("UnorganizedTexts"))
+filePath = UNORGANIZEDTEXTSPATH
 filename = ' '
 
 autosaveTimerLength = 10000
@@ -56,23 +56,40 @@ def LoadPreviousFiles():
                 name = Path(path).name
                 tab = CreateOpenTab(name)
                 tab.rtc.LoadFile(path)
-                logging.debug('FILE PARENTS')
-                logging.debug(Path(path).parent)
-                logging.debug(UNORGANIZEDTEXTSPATH)
-                if Path(path).parent == UNORGANIZEDTEXTSPATH:
+                if Path(path).parent == Path(UNORGANIZEDTEXTSPATH):
                     tab.rtc.isSaved = False
                 else:
                     tab.rtc.isSaved = True
             else:
-                 logging.debug('file no exist')
+                 logging.debug('file no exist')       
     shelfFile.close()
+    ChangeOpenFiles()
 
-def ChangeOpenFiles():
+def ChangeOpenFiles(tab = False):
     openedFiles.clear()
     for page in MAINNOTEBOOK:
         file = page.rtc.GetFilename()
-        openedFiles.append(file)
+        if not tab:
+            openedFiles.append(file)
+        elif tab.rtc.GetFilename() != file:
+            openedFiles.append(file)
+    #TODO: Change FileTreee when Changing Open Files
+    UpdateFileTree_nonProjectFiles()
     logging.debug(openedFiles)
+
+def UpdateFileTree_nonProjectFiles():
+    MAINTREE.DeleteChildren(MAINTREE.UnSaved)
+    MAINTREE.DeleteChildren(MAINTREE.UnsortedFiles)
+    for file in openedFiles:
+        if Path(file).parent == Path(UNORGANIZEDTEXTSPATH):
+            name = Path(file).name
+            MAINTREE.AppendItem(MAINTREE.UnSaved, name, data = {'path': file})
+        else:
+            name = Path(file).name
+            MAINTREE.AppendItem(MAINTREE.UnsortedFiles, name, data = {'path': file})
+            logging.debug('unsorted file %s', name)
+
+#for page
 
 def ShelveCurrentlyOpenFiles():
     ChangeOpenFiles()

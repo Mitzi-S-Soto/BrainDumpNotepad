@@ -5,6 +5,7 @@ It also has all the 'onEvent' type functions related
 to the Bind Events
 '''
 import pathlib as Path
+import send2trash as trash
 
 import wx 
 import wx.lib.agw.aui as aui
@@ -103,8 +104,6 @@ def StartBind(self):
     ON FUNCTIONS
 ##########'''
 
-
-
 ######## MAIN MENU BAR #########
 
 ### FILESAVING ###
@@ -134,18 +133,18 @@ def OnFileOpen(event):
             tab = f.CreateOpenTab(name)
             fileType = f.fileType
             tab.rtc.LoadFile(path, fileType)
-            if path.parent == f.UNORGANIZEDTEXTSPATH:
+            f.ChangeOpenFiles()
+            if Path.Path(path).parent == f.UNORGANIZEDTEXTSPATH:
                 tab.rtc.isSaved = False
-                loging.debug('not saved')
-                logging.debug(tab.rtc.isSaved)
+                logging.debug('not saved %s',tab.rtc.isSaved)
             else:
                 tab.rtc.isSaved = True
-                loging.debug('saved')
-                logging.debug(tab.rtc.isSaved)
+                logging.debug('saved %s',tab.rtc.isSaved)
+
         else:
             #TODO: change to open tab
             f.GetFilesTab(path)
-            logging.debug('File already opened')
+            logging.info('File already opened')
 
 def OnFileSave(event):
     id = event.GetId()
@@ -166,8 +165,7 @@ def OnFileSaveAs(event):
         if f.filePath:
             if not tab.isSaved:
                 delFile = tab.rtc.GetFilename()
-                #TODO: delete temp file
-                logging.debug(delFile)
+                trash.send2trash(delFile)
             tab.rtc.SaveFile(f.filePath, f.fileType)
             tab.isSaved = True
 # ---
@@ -203,7 +201,8 @@ def OnBold(event):
 
 def OnUpdateBold(event):
     tab = f.GetCurrentTab()
-    event.Check(tab.rtc.IsSelectionBold())
+    if tab:
+        event.Check(tab.rtc.IsSelectionBold())
 
 def OnItalic(event):
     tab = f.GetCurrentTab()
@@ -211,23 +210,28 @@ def OnItalic(event):
 
 def OnUpdateItalic(event):
     tab = f.GetCurrentTab()
-    event.Check(tab.rtc.IsSelectionItalics())
+    if tab:
+        event.Check(tab.rtc.IsSelectionItalics())
 
 def OnUnderline(event):
     tab = f.GetCurrentTab()
-    tab.rtc.ApplyUnderlineToSelection()
+    if tab:
+        tab.rtc.ApplyUnderlineToSelection()
 
 def OnUpdateUnderline(event):
     tab = f.GetCurrentTab()
-    event.Check(tab.rtc.IsSelectionUnderlined())
+    if tab:
+        event.Check(tab.rtc.IsSelectionUnderlined())
 
 def OnAlignLeft(event):
     tab = f.GetCurrentTab()
-    tab.rtc.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_LEFT)
+    if tab:
+        tab.rtc.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_LEFT)
 
 def OnUpdateAlignLeft(event):
     tab = f.GetCurrentTab()
-    event.Check(tab.rtc.IsSelectionAligned(wx.TEXT_ALIGNMENT_LEFT))
+    if tab:
+        event.Check(tab.rtc.IsSelectionAligned(wx.TEXT_ALIGNMENT_LEFT))
 
 def OnAlignCenter(event):
     tab = f.GetCurrentTab()
@@ -235,7 +239,8 @@ def OnAlignCenter(event):
 
 def OnUpdateAlignCenter(event):
     tab = f.GetCurrentTab()
-    event.Check(tab.rtc.IsSelectionAligned(wx.TEXT_ALIGNMENT_CENTRE))
+    if tab:
+        event.Check(tab.rtc.IsSelectionAligned(wx.TEXT_ALIGNMENT_CENTRE))
 
 def OnAlignRight(event):
     tab = f.GetCurrentTab()
@@ -243,7 +248,8 @@ def OnAlignRight(event):
 
 def OnUpdateAlignRight(event):
     tab = f.GetCurrentTab()
-    event.Check(tab.rtc.IsSelectionAligned(wx.TEXT_ALIGNMENT_RIGHT))
+    if tab:
+        event.Check(tab.rtc.IsSelectionAligned(wx.TEXT_ALIGNMENT_RIGHT))
 
 def _SetIndent(unindent = False):
     tab = f.GetCurrentTab()
@@ -320,11 +326,15 @@ def OnNewTab(event):
 
 ### NOTEBOOK & TABS
 def OnPageClose(event):
-    tab = f.GetCurrentTab()
+    tab = event.GetSelection()
+    tab = f.MAINNOTEBOOK.GetPage(tab)
     tab.rtc.SaveFile()
+    f.ChangeOpenFiles(tab)
+
 
 def OnPageClosed(event):
-    f.ChangeOpenFiles()
+    logging.debug('closed')
+    
 
 def OnPageRightClick(event):
     logging.debug('Tab Right Clicked')

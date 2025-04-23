@@ -28,8 +28,10 @@ Requirements
 
 Functionality Not Required
 --------------------------
+*Use own toolbar images
+*Fse own file ext
 *Font control on toolbar
-*split screen to see files side by side
+*Font size on toolbar
 *'scriverings' like setting to see multiple files as one 
 *Formatting Styles
 *Table Insertion
@@ -46,8 +48,3 @@ To Do's
 ----------------
 *Work on finishing tab editor
     before working on Tree
-*Use own images for toolbars
-*Tab functions? Right click menus
-**dont open already open file, just jump to tab
-* newTab.isSaved = True #TODO: this dont work for reopend unsorted - instead check if file is in temp first
----doesn't seem to be checking is saved
