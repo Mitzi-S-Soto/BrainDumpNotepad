@@ -31,18 +31,8 @@ class MainNotebook(aui.auibook.AuiNotebook):
             raise IndexError
     
     def NewTabPanel(self, parent):   
-        newTab= TabPanel(parent)
+        newTab = TabPanel(parent)
         return newTab
-
-    def _OnPageClose(self, event):
-        tab = self.GetCurrentPage()
-        tab.rtc.SaveFile() 
-
-    def _OnPageChanged(self, event):
-        pass
-
-    def _OnPageChanging(self, event):
-        pass
 
     
 def _AddRTCHandlers(self):
@@ -56,15 +46,22 @@ def _AddRTCHandlers(self):
         # can change the name or extension if you wanted...
         rt.RichTextBuffer.AddHandler(rt.RichTextHTMLHandler())
         rt.RichTextBuffer.AddHandler(rt.RichTextXMLHandler())
+        rt.RichTextBuffer.AddHandler(rt.RichTextPlainTextHandler())
 
         # ...like this
         rt.RichTextBuffer.AddHandler(rt.RichTextXMLHandler(name="Other XML",
                                                            ext="ox",
                                                            type=99))
+        rt.RichTextBuffer.AddHandler(rt.RichTextPlainTextHandler(name="Python",
+                                                           ext="py",
+                                                           type=99))
 
         # This is needed for the view as HTML option since we tell it
         # to store the images in the memory file system.
         wx.FileSystem.AddHandler(wx.MemoryFSHandler())
+
+        self.WILDCARD = rt.RichTextBuffer.GetExtWildcard()
+        self.WILDCARD = list(self.WILDCARD)
 
 
 

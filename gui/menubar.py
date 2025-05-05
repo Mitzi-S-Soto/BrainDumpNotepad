@@ -12,6 +12,8 @@ def CreateMenuBar(self):
         
     self.menuFile_Open = menuFile.Append(wx.ID_OPEN, "&Open"+"\t"+"Ctrl+O",
                                              "Open a new file.")
+    self.menuFile_OpenProject = menuFile.Append(-1, "&Open Project"+"\t"+"Ctrl+O+P",
+                                             "Open a project directory.")
     menuFile.AppendSeparator()
 
     self.menuFile_Save = menuFile.Append(wx.ID_SAVE,

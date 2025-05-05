@@ -13,14 +13,14 @@ import wx.lib.agw.aui as aui  # Tab notebooks
 import gui.aui_mgr as aui_mgr  # our AUI Manager code
 import gui.menubar as menubar
 import gui.toolbar as toolbar
-import gui.filetree as tree
+import gui.treectrls as tree
 import gui.mainnotebook as note
 import gui.popmenu_tab as tabpop
 
 class MainWindow(wx.Frame):
 
     def __init__(self):
-        wx.Frame.__init__(self, None, wx.ID_ANY, "BrainDump Notepad", size=(640, 480))
+        wx.Frame.__init__(self, None, wx.ID_ANY, "BrainDump Notepad", size=(720, 480))
         
         ''' --------
             Create GUI
@@ -44,7 +44,7 @@ class MainWindow(wx.Frame):
         )
         self._mgr.AddPane(
             self.Tree,
-            aui.AuiPaneInfo()
+            aui.AuiPaneInfo().BestSize((150,100))
             .Left()
             .Caption("File Tree")
             .CloseButton(False)

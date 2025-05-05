@@ -7,6 +7,7 @@ def MakeToolBar(self):
     tbar = wx.ToolBar(self.tbar_panel)
 
     self.idOnOpen = tbar.AddTool(-1, '', images._rt_open.GetBitmap(), shortHelp="Open")
+    self.idOnOpenProject = tbar.AddTool(-1, '', images.expansion.GetBitmap(), shortHelp="Open Project")
     self.idOnSave = tbar.AddTool(-1, '', images._rt_save.GetBitmap(), shortHelp="Save")
 
     tbar.AddSeparator()
@@ -44,7 +45,7 @@ def MakeToolBar(self):
     
     tbar.AddSeparator()
     
-    self.idNewTab = tbar.AddTool(-1,' ', images._rt_indentless.GetBitmap(), shortHelp="New Tab")#, on.OnNewTab)
+    self.idNewTab = tbar.AddTool(-1,' ', images.moredialog.GetBitmap(), shortHelp="New Tab")#, on.OnNewTab)
     
     tbar.Realize()
     

@@ -1,12 +1,13 @@
 #functions
+
+import os
 from pathlib import Path
 import shelve
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
-# These 'constants' will be set when the assosiated window is
-# first created 
+# These 'constants' will be set when the assosiated window is first created 
 UNORGANIZEDTEXTSPATH = str(Path.cwd() / Path("UnorganizedTexts"))
 
 PROGRAMNAME = 'BrainDump Notepad'
@@ -15,55 +16,60 @@ PROGRAMABOUT = 'A small notepad thing'
 MAINWINDOW = ''
 MAINNOTEBOOK = ''
 MAINTREE = ''
+DIRTREE = ''
 
-WILDCARD = "Text (*.txt)|*.txt|" "Python (*.py)|*py|" "XML (*.xml)|*xml" "HTML (*.html)|*html"
+WILDCARD =  []
+CHECKWILDCARDS = ['.txt','.py','.xml','.html']
 
 ALTEVENTTAB = [] #Set in Bind Events
-
 # -----
-
-path = Path.cwd()
-dirname = "."
 fileType = 1
 filePath = UNORGANIZEDTEXTSPATH
-filename = ' '
+treeDirectory = UNORGANIZEDTEXTSPATH
 
 autosaveTimerLength = 10000
 
 openedFiles = []
+projectFiles = []
 
 def DefaultFileDialogOptions():
-        """Return a dictionary with file doalog options that
-        can be used in bot the save f ile as well as the open file dialog"""
-        return dict(
-            message = "Choose a file :",
-            defaultDir = filePath,
-            wildcard = WILDCARD,
-        )
+    pass
 
-#---
+#- FUNCTIONS
+
+def GetFileNameandParentDir(path):
+    '''
+    Returns file's name as:
+    'dir/filename.ext'
+    '''
+    name = Path(path).name
+    parent = Path(path).parent.name
+    name = str(parent) +"/"+ str(name)
+    return name
 
 def LoadPreviousFiles():
+    '''
+    Use Shelve module to open and load
+    previous saved files.
+    '''
     shelfFile = shelve.open('openedFiles')
+    #Check if there are previous files to open
+    #if not, create a new, blank tab
     if 'openedFiles' not in shelfFile:
         CreateNewTab()
     elif len(shelfFile['openedFiles']) <= 0:
         CreateNewTab()
     else:
-        for file in shelfFile['openedFiles']:
-            path = file
-            if path and Path(file).is_file():
-                name = Path(path).name
-                tab = CreateOpenTab(name)
-                tab.rtc.LoadFile(path)
-                if Path(path).parent == Path(UNORGANIZEDTEXTSPATH):
-                    tab.rtc.isSaved = False
-                else:
-                    tab.rtc.isSaved = True
+        for path in shelfFile['openedFiles']:
+            if path and Path(path).is_file():
+                CreateOpenTab(path)
             else:
-                 logging.debug('file no exist')       
+                logging.debug('file no exist')   
+    if 'currentProject' in shelfFile:
+        ChangeProjectTreeDirectory(shelfFile['currentProject'])   
     shelfFile.close()
     ChangeOpenFiles()
+
 
 def ChangeOpenFiles(tab = False):
     openedFiles.clear()
@@ -77,20 +83,6 @@ def ChangeOpenFiles(tab = False):
     UpdateFileTree_nonProjectFiles()
     logging.debug(openedFiles)
 
-def UpdateFileTree_nonProjectFiles():
-    MAINTREE.DeleteChildren(MAINTREE.UnSaved)
-    MAINTREE.DeleteChildren(MAINTREE.UnsortedFiles)
-    for file in openedFiles:
-        if Path(file).parent == Path(UNORGANIZEDTEXTSPATH):
-            name = Path(file).name
-            MAINTREE.AppendItem(MAINTREE.UnSaved, name, data = {'path': file})
-        else:
-            name = Path(file).name
-            MAINTREE.AppendItem(MAINTREE.UnsortedFiles, name, data = {'path': file})
-            logging.debug('unsorted file %s', name)
-
-#for page
-
 def ShelveCurrentlyOpenFiles():
     ChangeOpenFiles()
     shelfFile = shelve.open('openedFiles')
@@ -98,36 +90,93 @@ def ShelveCurrentlyOpenFiles():
     logging.debug(shelfFile['openedFiles'])
     shelfFile.close()
 
+def ShelveCurrentlyOpenProject():
+    shelfFile = shelve.open('openedFiles')
+    shelfFile['currentProject'] = MAINTREE.projectFolder
+    shelfFile.close()
+
 def SaveAllOpenFiles():
     for page in MAINNOTEBOOK:
         page.rtc.SaveFile()
-        logging.debug('page')
 
 # ----
+# FILE TREE
 
-def GetFilesTab(info):
+def UpdateFileTree_nonProjectFiles():
+    MAINTREE.DeleteChildren(MAINTREE.UnSaved)
+    MAINTREE.DeleteChildren(MAINTREE.UnsortedFiles)
+    for file in openedFiles:
+        if Path(file).parent == Path(UNORGANIZEDTEXTSPATH):
+            name = Path(file).name
+            item = MAINTREE.AppendItem(MAINTREE.UnSaved, name, data = [file])
+            SetTreeItemImg(item,2,2)
+        elif Path(file) not in projectFiles:
+            name = Path(file).name
+            item = MAINTREE.AppendItem(MAINTREE.UnsortedFiles, name, data =[file])
+            SetTreeItemImg(item,2,2)
+
+def WalkProjectDirectory():
+
+    tree = [MAINTREE.projectRoot]
+
+    for folderName, subfolders, filenames in os.walk(MAINTREE.projectFolder):
+        logging.debug('The current folder is ' + folderName)
+        parent = tree[-1]
+        for subfolder in subfolders:
+            logging.debug('SUBFOLDER OF ' + folderName + ': ' + subfolder)
+            name = Path(subfolder).name
+            filepath = os.path.join(folderName, subfolder)
+            tree.append(MAINTREE.AppendItem(parent, name, data = [filepath]))
+            MAINTREE.SetItemBold(tree[-1], bold=True)
+            SetTreeItemImg(tree[-1])
+
+        for filename in filenames:
+            logging.debug('FILE INSIDE ' + folderName + ': '+ filename)
+            name = Path(filename).name
+            filepath = os.path.join(folderName, filename)
+            item = MAINTREE.AppendItem(parent, name, data = [filepath])
+            SetTreeItemImg(item, norm=2, exp=2)
+
+def ChangeProjectTreeDirectory(dir):
+    MAINTREE.DeleteChildren(MAINTREE.Project)
+    MAINTREE.projectFolder = dir
+    MAINTREE.projectRoot = MAINTREE.AppendItem(MAINTREE.Project, Path(MAINTREE.projectFolder).name)
+    SetTreeItemImg(MAINTREE.projectRoot)
+    WalkProjectDirectory()
+
+def SetTreeItemImg(item, norm=0, exp=1):
+    MAINTREE.SetItemImage(item, MAINTREE.file_img[norm], MAINTREE.normal)
+    MAINTREE.SetItemImage(item, MAINTREE.file_img[exp], MAINTREE.expanded)
+
+#--
+
+def GetTabFromFilename(path):
     for page in MAINNOTEBOOK:
         file = page.rtc.GetFilename()
-        if info == file:
+        if path == file:
             id = MAINNOTEBOOK.GetPageIndex(page)
             MAINNOTEBOOK.SetSelection(id)
             logging.debug('switch to page done')
 
-def GetCurrentTab():
-    tab = MAINNOTEBOOK.GetCurrentPage()
-    return tab
-
-def GetEventTab(id):
-    if id in ALTEVENTTAB:
-        tab = MAINWINDOW.tabPopPage
-        tab = MAINNOTEBOOK.GetPage(tab)
+def GetCurrentTab(eventyes = False, id = 0):
+    if eventyes and id in ALTEVENTTAB:
+        tab = MAINNOTEBOOK.GetPage(MAINWINDOW.tabPopPage)
     else:
-        tab = GetCurrentTab()
+        tab = MAINNOTEBOOK.GetCurrentPage()
     return tab
 
-def CreateOpenTab(name = 'Open Tab'):
+def CreateOpenTab(path):
+        name = GetFileNameandParentDir(path)
         newTab = MAINNOTEBOOK.NewTabPanel(MAINNOTEBOOK)
         MAINNOTEBOOK.AddPage(newTab, name)
+        newTab.rtc.LoadFile(str(path), fileType)
+
+        if Path(path).parent == UNORGANIZEDTEXTSPATH:
+            newTab.rtc.isSaved = False
+            logging.debug('not saved %s',newTab.isSaved)
+        else:
+            newTab.isSaved = True
+            logging.debug('saved %s',newTab.isSaved)
         #Change to recently opened
         num = MAINNOTEBOOK.GetPageCount()
         MAINNOTEBOOK.SetSelection(num-1)
@@ -138,19 +187,17 @@ def CreateNewTab(name = 'New Tab'):
     '''Create new blank file/tab/page'''
     newTab = MAINNOTEBOOK.NewTabPanel(MAINNOTEBOOK)
     # CREATE INITIAL SAVE FILE
-    path = Path.cwd()
-    path_UnOrgTexts = path/Path('UnorganizedTexts')
     file_exists = True
     i = 1
     while file_exists:
         new_file = str(i) + '.txt'
-        new_file_path = path_UnOrgTexts/Path(new_file)
+        new_file_path = UNORGANIZEDTEXTSPATH/Path(new_file)
         if new_file_path.is_file():
             i+=1
         else: 
             # SAVE FILE WITH AVAILABLE FILENAME
             newTab.rtc.SaveFile(str(new_file_path))
-            name = Path(new_file_path).name
+            name = GetFileNameandParentDir(new_file_path)
             MAINNOTEBOOK.AddPage(newTab, name)
             MAINNOTEBOOK.SetSelection(MAINNOTEBOOK.GetPageIndex(newTab))
             file_exists = False
@@ -162,6 +209,7 @@ def CreateNewTab(name = 'New Tab'):
 def OnExitProgram():
     '''Functions common to all functions that close the program'''
     ShelveCurrentlyOpenFiles()
+    ShelveCurrentlyOpenProject()
     MAINWINDOW._mgr.onClose()
 
 # ---

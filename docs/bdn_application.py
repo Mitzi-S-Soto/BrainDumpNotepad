@@ -28,7 +28,7 @@ import src.bind_events as bind_events
 import gui.aui_mgr as aui_mgr  # our AUI Manager code
 import gui.menubar as menubar
 import gui.toolbar as toolbar
-import gui.filetree as tree
+import gui.treectrls as tree
 import gui.mainnotebook as note
 import logging
 

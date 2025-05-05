@@ -23,6 +23,8 @@ def StartBind(self):
     w = f.MAINWINDOW
 
     f.MAINNOTEBOOK = w.notebook
+    f.WILDCARD = f.MAINNOTEBOOK.WILDCARD
+
     f.MAINTREE = w.Tree
 
     f.ALTEVENTTAB = [w.idTabPop_Save, w.idTabPop_Close]
@@ -30,6 +32,7 @@ def StartBind(self):
     # MAIN MENU EVENTS
     w.Bind(wx.EVT_MENU, OnNewTab, w.menuFile_NewTab)
     w.Bind(wx.EVT_MENU, OnFileOpen, w.menuFile_Open)
+    w.Bind(wx.EVT_MENU, OnFileOpenProject, w.menuFile_OpenProject)
     w.Bind(wx.EVT_MENU, OnFileSave, w.menuFile_Save)
     w.Bind(wx.EVT_MENU, OnFileSaveAs, w.menuFile_SaveAs)
     w.Bind(wx.EVT_MENU, OnExit, w.menuFile_Close)
@@ -53,6 +56,7 @@ def StartBind(self):
 
     # MAIN TOOLBAR EVENTS
     w.Bind(wx.EVT_TOOL, OnFileOpen, w.idOnOpen)
+    w.Bind(wx.EVT_TOOL, OnFileOpenProject, w.idOnOpenProject)
     w.Bind(wx.EVT_TOOL, OnFileSave, w.idOnSave)
 
     w.Bind(wx.EVT_TOOL, ForwardEvent, w.idOnCut)
@@ -97,8 +101,11 @@ def StartBind(self):
     f.MAINNOTEBOOK.Bind(aui.EVT_AUINOTEBOOK_TAB_RIGHT_DOWN, OnPageRightClick)
 
     #TabPopMenu
-    w.Bind(wx.EVT_MENU, OnFileSave, id=w.idTabPop_Save)
-    w.Bind(wx.EVT_MENU, OnCloseTab, id=w.idTabPop_Close)
+    w.Bind(wx.EVT_MENU, OnFileSave, w.idTabPop_Save)
+    w.Bind(wx.EVT_MENU, OnCloseTab, w.idTabPop_Close)
+
+    #TREE EVENTS
+    f.MAINTREE.Bind(wx.EVT_TREE_ITEM_ACTIVATED, OnTreeItemClicked)
 
 '''##########
     ON FUNCTIONS
@@ -109,14 +116,14 @@ def StartBind(self):
 ### FILESAVING ###
 
 def _AskForFilename(**dialogOptions):
-
-    dialog = wx.FileDialog(f.MAINWINDOW, **dialogOptions)
+    wildcard, types = rt.RichTextBuffer.GetExtWildcard(save=False)
+    message = "Choose a file :"
+    defaultDir = f.filePath
+    dialog = wx.FileDialog(f.MAINWINDOW, message = message, defaultDir = defaultDir, wildcard=wildcard)
 
     if dialog.ShowModal() == wx.ID_OK:
         providedFilename = True
-        f.fileType = dialog.GetFilterIndex()
-        f.filename = dialog.GetFilename()
-        f.dirname = dialog.GetDirectory()
+        f.fileType = types[dialog.GetFilterIndex()]
         f.filePath = dialog.GetPath()
     else:
         providedFilename = False
@@ -125,42 +132,35 @@ def _AskForFilename(**dialogOptions):
 
 def OnFileOpen(event):
     """Open a File"""
-    if _AskForFilename(style=wx.FD_OPEN, **f.DefaultFileDialogOptions()):
-        path = f.filePath
-        f.ChangeOpenFiles()
-        if path not in f.openedFiles:
-            name = Path.Path(path).name
-            tab = f.CreateOpenTab(name)
-            fileType = f.fileType
-            tab.rtc.LoadFile(path, fileType)
-            f.ChangeOpenFiles()
-            if Path.Path(path).parent == f.UNORGANIZEDTEXTSPATH:
-                tab.rtc.isSaved = False
-                logging.debug('not saved %s',tab.rtc.isSaved)
-            else:
-                tab.rtc.isSaved = True
-                logging.debug('saved %s',tab.rtc.isSaved)
-
+    if _AskForFilename(style=wx.FD_OPEN):
+        if f.filePath not in f.openedFiles:
+            f.CreateOpenTab(f.filePath)
         else:
-            #TODO: change to open tab
-            f.GetFilesTab(path)
-            logging.info('File already opened')
+            f.GetTabFromFilename(f.filePath)
+
+def OnFileOpenProject(event):
+    '''open a directory in the file tree'''
+    dlg = wx.DirDialog (None, "Choose input directory", "",
+                    wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+    if dlg.ShowModal() == wx.ID_OK:
+        f.ChangeProjectTreeDirectory(dlg.GetPath())
+    dlg.Destroy()
 
 def OnFileSave(event):
     id = event.GetId()
-    tab =  f.GetEventTab(id)
-    if tab.rtc.isSaved:
+    tab = f.GetCurrentTab(True, id)
+    if tab.isSaved:
         tab.rtc.SaveFile()
     else:
         OnFileSaveAs(event)
 
 def OnFileSaveAs(event):
     id = event.GetId()
-    tab =  f.GetEventTab(id)
+    tab =  f.GetCurrentTab(True, id)
     file = tab.rtc.GetFilename()
     file = Path.Path(file).name
     if _AskForFilename(
-        defaultFile=file, style=wx.FD_SAVE, **f.DefaultFileDialogOptions()
+        defaultFile=file, style=wx.FD_SAVE
     ):
         if f.filePath:
             if not tab.isSaved:
@@ -168,7 +168,9 @@ def OnFileSaveAs(event):
                 trash.send2trash(delFile)
             tab.rtc.SaveFile(f.filePath, f.fileType)
             tab.isSaved = True
+
 # ---
+
 def OnAbout(event):
     abt = wx.MessageDialog(f.MAINWINDOW, f.PROGRAMABOUT, f.PROGRAMNAME, wx.OK)
     abt.ShowModal()
@@ -180,11 +182,10 @@ def OnExit(event):
 
 def OnCloseWindow(event):
     """
-        Quit and destroy application.
+    Quit and destroy application.
     """
     f.OnExitProgram()
     f.MAINWINDOW.Destroy()
-
 
 ###### On Text Stylings/Toolbar #######
 
@@ -206,7 +207,8 @@ def OnUpdateBold(event):
 
 def OnItalic(event):
     tab = f.GetCurrentTab()
-    tab.rtc.ApplyItalicToSelection()
+    if tab:
+        tab.rtc.ApplyItalicToSelection()
 
 def OnUpdateItalic(event):
     tab = f.GetCurrentTab()
@@ -235,7 +237,8 @@ def OnUpdateAlignLeft(event):
 
 def OnAlignCenter(event):
     tab = f.GetCurrentTab()
-    tab.rtc.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_CENTRE)
+    if tab:
+        tab.rtc.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_CENTRE)
 
 def OnUpdateAlignCenter(event):
     tab = f.GetCurrentTab()
@@ -244,7 +247,8 @@ def OnUpdateAlignCenter(event):
 
 def OnAlignRight(event):
     tab = f.GetCurrentTab()
-    tab.rtc.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_RIGHT)
+    if tab:
+        tab.rtc.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_RIGHT)
 
 def OnUpdateAlignRight(event):
     tab = f.GetCurrentTab()
@@ -325,22 +329,45 @@ def OnNewTab(event):
     f.CreateNewTab()
 
 ### NOTEBOOK & TABS
-def OnPageClose(event):
-    tab = event.GetSelection()
-    tab = f.MAINNOTEBOOK.GetPage(tab)
-    tab.rtc.SaveFile()
-    f.ChangeOpenFiles(tab)
-
-
-def OnPageClosed(event):
-    logging.debug('closed')
-    
 
 def OnPageRightClick(event):
-    logging.debug('Tab Right Clicked')
     f.MAINWINDOW.tabPopPage = event.GetSelection()
     tabpop.OnTabPopMenu(f.MAINWINDOW, event)
 
 def OnCloseTab(event):
     '''When tab is closed via menu'''
     f.MAINNOTEBOOK.DeletePage(f.MAINWINDOW.tabPopPage)
+
+def OnPageClose(event):
+    tab = event.GetSelection()
+    tab = f.MAINNOTEBOOK.GetPage(tab)
+    tab.rtc.SaveFile()
+    f.ChangeOpenFiles(tab)
+
+def OnPageClosed(event):
+    logging.debug('closed')
+
+#ON TREE CONTROLS
+
+def OnTreeItemClicked(event):
+    wildcard, types = rt.RichTextBuffer.GetExtWildcard(save=True)
+    item = f.MAINTREE.GetFocusedItem()
+    data = f.MAINTREE.GetItemData(item)
+    if data:
+        path = str(Path.Path(data[0]))
+
+    if f.MAINTREE.ItemHasChildren(item):
+        f.MAINTREE.Toggle(item)
+    else:
+        #OPEN ITEM
+        f.ChangeOpenFiles()
+        for ext in wildcard:
+            if path.endswith(ext):
+                if path not in f.openedFiles:
+                    new = f.CreateOpenTab(path)
+                    filepath = new.rtc.GetFilename()
+                    f.projectFiles.append(filepath)
+                else:
+                    f.GetTabFromFilename(path)
+        
+    
