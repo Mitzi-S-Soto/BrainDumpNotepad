@@ -1,4 +1,12 @@
 #AutoSaveTimer.py
+'''
+This is the autosave timer featurer of the program
+It is kept as a seperate module as to help manage it
+seperatly so it doesn't break as easy
+
+Possibly could be improved, but as for now
+we aren't going to touch what isn't broken
+'''
 import wx
 import wx.lib.delayedresult as delayedresult
 
@@ -50,4 +58,3 @@ def AutoSaveConsumer(delayedResult):
         logging.info("done %s", result)
     else:
         logging.debug("No result")
-

@@ -1,4 +1,8 @@
 #MenuBar.py
+'''
+Just the GUI settings for the menu bar
+all bind events happen in src/bind_events
+'''
 import wx
 
 def CreateMenuBar(self):
@@ -8,12 +12,13 @@ def CreateMenuBar(self):
     menuFormat = wx.Menu()
     menuAbout = wx.Menu()
 
-    self.menuFile_NewTab = menuFile.Append(-1,"&New","Create a new tab.")
+    self.menuFile_NewTab = menuFile.Append(-1, "&New", "Create a new tab.")
         
-    self.menuFile_Open = menuFile.Append(wx.ID_OPEN, "&Open"+"\t"+"Ctrl+O",
-                                             "Open a new file.")
-    self.menuFile_OpenProject = menuFile.Append(-1, "&Open Project"+"\t"+"Ctrl+O+P",
-                                             "Open a project directory.")
+    self.menuFile_Open = menuFile.Append(wx.ID_OPEN, "&Open"+"\t"+"Ctrl+O", "Open a new file.")
+
+    self.menuFile_OpenProject = menuFile.Append(-1, "&Open Project"+"\t"+"Ctrl+P", "Open a project directory.")
+    self.menuFile_RefreshProject = menuFile.Append(-1, "&Refresh Project"+"\t"+"Ctrl+option+P", "Refresh project directory.")
+
     menuFile.AppendSeparator()
 
     self.menuFile_Save = menuFile.Append(wx.ID_SAVE,
@@ -54,6 +59,7 @@ def CreateMenuBar(self):
                                              "&Underline"+"\t"+"Ctrl+Shift+U",
                                              "Underline")
     menuFormat.AppendSeparator()
+
     self.menuFormat_AlignLeft = menuFormat.Append(-1, "&Align Left"+"\t"+"Ctrl+[",
                                                   "Align Left")
     self.menuFormat_AlignCenter = menuFormat.Append(-1, "&Align Center"+"\t"+"Ctrl+\ ",
@@ -61,11 +67,13 @@ def CreateMenuBar(self):
     self.menuFormat_AlignRight = menuFormat.Append(-1, "&Align Right"+"\t"+"Ctrl+]",
                                                   "Align Right")
     menuFormat.AppendSeparator()
+
     self.menuFormat_Unindent = menuFormat.Append(-1,"&Unindent",
                                                  "Unindent")
     self.menuFormat_Indent = menuFormat.Append(-1,"&Indent",
                                                  "Indent")
     menuFormat.AppendSeparator()
+    
     self.menuFormat_Font = menuFormat.Append(-1,"&Font Style",
                                                  "Set Font Style")
     self.menuFormat_Color = menuFormat.Append(-1,"&Font Color",

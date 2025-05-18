@@ -1,4 +1,0 @@
-This is my text editor. So far so good!
-I can save as plain text, or as xml.
-I think I can figure out my 'own' file ext
-but I think that is out of scope for this program

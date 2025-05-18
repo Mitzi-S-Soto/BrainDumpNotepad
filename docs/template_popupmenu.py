@@ -73,4 +73,3 @@ def OnPopupEight(event):
 
 def OnPopupNine(event):
     logging.debug("Popup nine\n")
-

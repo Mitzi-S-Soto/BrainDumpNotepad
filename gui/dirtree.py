@@ -1,2 +1,0 @@
-#dirTree class
-import wx
