@@ -197,6 +197,9 @@ def OnFileSaveAs(event):
         if f.filePath:
             f.DeleteTempSave(tab)
             tab.rtc.SaveFile(f.filePath, f.fileType)
+            #TODO: Change Tab Name
+            name = f.GetFileNameandParentDir(f.filePath)
+            f.MAINNOTEBOOK.SetPageText(f.MAINWINDOW.tabPopPage, name)
             tab.isSaved = True
             f.ChangeOpenFiles()
 

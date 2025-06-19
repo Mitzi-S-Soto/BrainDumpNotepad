@@ -43,12 +43,4 @@ Limitations
 The program must:
     *Run on Mac
 
-To Do's
-----------------
-*Work on finishing tab editor
-    before working on Tree
-*Use own images for toolbars
-*Tab functions? Right click menus
-**dont open already open file, just jump to tab
-* newTab.isSaved = True #TODO: this dont work for reopend unsorted - instead check if file is in temp first
----doesn't seem to be checking is saved
+
